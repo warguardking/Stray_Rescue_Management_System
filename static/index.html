@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SRMS</title>
+<style>
+:root{--bg:#f3f5f2;--card:#fff;--ink:#17231e;--mute:#5f6d66;--line:#dbe2dd;--teal:#0d7a64;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
+header{background:var(--ink);color:#fff;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+header b{font-size:19px;cursor:pointer}header span{color:#b9c8c1;font-size:13px;margin-right:10px}
+main{max-width:1050px;margin:auto;padding:20px 24px}.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px}
+h2{font-size:19px;margin:0 0 10px}h3{font-size:15px;margin:0 0 8px}.mute{color:var(--mute);font-size:13px}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 3px}input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+button{background:var(--teal);color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer;margin:10px 6px 0 0}
+button.g{background:#fff;color:var(--teal);border:1px solid var(--teal)}header button{margin:0;padding:5px 12px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}.tile{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 10px;text-align:center;cursor:pointer;font-size:15px;margin:0;color:var(--ink)}
+.tile:hover{border-color:var(--teal)}.tile i{display:block;font-style:normal;font-size:28px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.row{display:flex;gap:8px}.row>*{flex:1}@media(max-width:760px){.two{grid-template-columns:1fr}main{padding:14px}}
+.item{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;gap:12px}.item img{width:84px;height:84px;object-fit:cover;border-radius:6px;flex:none}.item>div{flex:1;min-width:0}
+.badge{font-size:12px;padding:2px 9px;border-radius:99px;background:#e4efe9;color:var(--teal);white-space:nowrap}.top{display:flex;justify-content:space-between;gap:8px}
+.upd{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.upd select{width:auto}.upd input{flex:1;min-width:120px}.upd button{margin:0;padding:6px 12px}
+.msg{font-size:13px;margin-top:8px;min-height:18px}.err{color:var(--red)}.ok{color:var(--teal)}.note{font-size:13px;margin-top:4px;background:#f3f7f5;padding:4px 8px;border-radius:4px}
+.demo{background:#fff8e6;border:1px solid #ecd9a0;border-radius:6px;padding:8px 10px;font-size:13px;margin-top:10px}a{color:var(--teal)}
+</style></head><body>
+<header><b onclick="go('home')">SRMS · Stray Rescue Management System</b><div id="who"></div></header>
+<main id="app"></main>
+<script>
+const $=s=>document.querySelector(s),esc=t=>String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let me=null,D=null,view="home",pre="",tab="login",email="",demo="",msg="";
+async function api(m,u,b){const r=await fetch(u,{method:m,headers:{"Content-Type":"application/json"},body:b?JSON.stringify(b):undefined});const j=await r.json();if(!r.ok){const e=new Error(j.error);e.data=j;throw e}return j}
+const MODS={report:["🐾","Report a stray animal"],adopt:["🏠","Adopt a stray animal"],foster:["🤝","Foster a stray animal"],donate:["💝","Make a donation"],volunteer:["🙋","Volunteer"]};
+async function boot(){me=(await api("GET","/api/me")).me;if(me)D=await api("GET","/api/data");$("#who").innerHTML=me?`<span>${esc(me.name)} (${me.role=="shelter"?"shelter":"registered user"})</span><button class="g" onclick="out()">Log out</button>`:"";draw()}
+async function out(){await api("POST","/api/logout");view="home";boot()}
+function go(v){view=v;msg="";draw()}
+function pic(file){return new Promise(r=>{if(!file||!file.size)return r("");const f=new FileReader();f.onload=()=>{const i=new Image();i.onload=()=>{const s=Math.min(1,600/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*s;c.height=i.height*s;c.getContext("2d").drawImage(i,0,0,c.width,c.height);r(c.toDataURL("image/jpeg",.7))};i.onerror=()=>r("");i.src=f.result};f.readAsDataURL(file)})}
+async function add(e,t){e.preventDefault();const d=Object.fromEntries(new FormData(e.target));if("photo" in d)d.photo=await pic(d.photo);
+ try{await api("POST","/api/add/"+t,d);D=await api("GET","/api/data");msg="Saved. You can follow the status below.";draw()}catch(x){e.target.querySelector(".msg").className="msg err";e.target.querySelector(".msg").textContent=x.message}}
+async function save(t,id){try{await api("POST",`/api/update/${t}/${id}`,{status:$("#s"+t+id).value,note:$("#n"+t+id).value});D=await api("GET","/api/data");msg="Status updated.";draw()}catch(x){alert(x.message)}}
+const opts=(a,v)=>a.map(x=>`<option ${x==v?"selected":""}>${esc(x)}</option>`).join("");
+const upd=(t,r)=>`<div class="upd"><select id="s${t}${r.id}">${opts(D.statuses[t],r.status)}</select><input id="n${t}${r.id}" placeholder="Note for the user" value="${esc(r.note)}"><button onclick="save('${t}',${r.id})">Save</button></div>`;
+const stat=r=>`<span class="badge">${esc(r.status)}</span>`,nt=r=>r.note?`<div class="note">Update: ${esc(r.note)}</div>`:"";
+const map=a=>`<a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a)}">View on map</a>`;
+const img=p=>p?`<img src="${esc(p)}" alt="">`:"";
+const empty=t=>`<p class="mute">${t}</p>`;
+const byId=(a,id)=>a.find(x=>x.id==id)||{};
+const frm=(t,inner,btn)=>`<form onsubmit="add(event,'${t}')">${inner}<button>${btn}</button><div class="msg ok">${esc(msg)}</div></form>`;
+const sh=me=>me&&me.role=="shelter";
+function V_home(){return `<div class="card"><h2>Report, adopt, foster, volunteer and donate</h2><p>SRMS brings the public, shelters and rescue teams onto one platform to manage stray animals. Anyone can browse this page. Register to use the system.</p>
+<div class="tiles">${Object.values(MODS).map(m=>`<div class="tile" onclick="go('login')"><i>${m[0]}</i>${m[1]}</div>`).join("")}</div>
+<button onclick="go('login')">Log in or register</button></div>
+<div class="card"><h3>What each account can do</h3><p class="mute">Registered user: report strays with photos, apply to adopt or foster, register for volunteer events, donate, and follow the status of everything submitted.<br>Registered shelter: respond to reports, manage animal profiles, review adoption and foster applications, organise events, and verify donations.</p></div>`}
+function V_auth(){const f=(n,l,t="text")=>`<label>${l}</label><input name="${n}" type="${t}" required>`;
+ const tabs=`<div style="margin-bottom:8px">${["login","register","forgot"].map(x=>`<button class="${tab==x?"":"g"}" onclick="tab='${x}';msg='';demo='';go('login')">${{login:"Log in",register:"Register",forgot:"Forgot password"}[x]}</button>`).join("")}</div>`;
+ let b="";
+ if(tab=="login")b=`<form onsubmit="auth(event,'login')">${f("email","Email","email")}${f("password","Password","password")}<button>Log in</button><div class="msg err">${esc(msg)}</div></form>`;
+ if(tab=="register")b=`<form onsubmit="auth(event,'register')">${f("name","Name (shelter name for shelters)")}${f("email","Email","email")}${f("password","Password (6+ characters)","password")}
+  <label>Account type</label><select name="role"><option value="user">Registered user</option><option value="shelter">Registered shelter</option></select>
+  <label>Phone</label><input name="phone"><label>Address (required for shelters)</label><input name="address" placeholder="Street, area, city"><button>Register</button><div class="msg err">${esc(msg)}</div></form>`;
+ if(tab=="forgot")b=`<form onsubmit="auth(event,'forgot')">${f("email","Email","email")}<button>Send reset code</button><div class="msg err">${esc(msg)}</div></form>`;
+ if(tab=="verify")b=`<form onsubmit="auth(event,'verify')"><p>Enter the 6-digit code sent to <b>${esc(email)}</b>.</p><input type="hidden" name="email" value="${esc(email)}"><label>Verification code</label><input name="code" required><button>Verify</button><button type="button" class="g" onclick="resend()">Resend code</button><div class="msg err">${esc(msg)}</div></form>`;
+ if(tab=="reset")b=`<form onsubmit="auth(event,'reset')"><p>Enter the code sent to <b>${esc(email)}</b> and a new password.</p><input type="hidden" name="email" value="${esc(email)}"><label>Code</label><input name="code" required>${f("password","New password","password")}<button>Reset password</button><div class="msg err">${esc(msg)}</div></form>`;
+ return `<div class="card" style="max-width:480px;margin:auto"><h2>${{login:"Log in",register:"Create an account",forgot:"Reset your password",verify:"Verify your email",reset:"Choose a new password"}[tab]}</h2>${["verify","reset"].includes(tab)?"":tabs}${b}${demo?`<div class="demo">No email server is connected, so the code is shown here: <b>${esc(demo)}</b></div>`:""}</div>`}
+async function auth(e,a){e.preventDefault();const d=Object.fromEntries(new FormData(e.target));msg="";
+ try{const r=await api("POST","/api/"+a,d);
+  if(a=="login"){await boot();view="home";return draw()}
+  if(a=="register"||a=="forgot"){email=d.email.toLowerCase();demo=r.code;tab=a=="register"?"verify":"reset"}
+  else if(a=="verify"){tab="login";demo="";msg="Email verified. Please log in."}else{tab="login";demo="";msg="Password changed. Please log in."}
+ }catch(x){if(x.data&&x.data.verify){email=d.email.toLowerCase();tab="verify";demo="";msg="Verify your email, then log in."}else msg=x.message}draw()}
+async function resend(){try{demo=(await api("POST","/api/resend",{email})).code;msg=""}catch(x){msg=x.message}draw()}
+function V_dash(){const sl=D.shelters;return `<div class="card"><h2>${sh(me)?"Shelter dashboard":"Welcome, "+esc(me.name)}</h2><div class="tiles">${Object.entries(MODS).map(([k,m])=>`<div class="tile" onclick="go('${k}')"><i>${m[0]}</i>${sh(me)?m[1].replace("Report a stray animal","Stray reports").replace("Adopt a stray animal","Adoptions").replace("Foster a stray animal","Fostering").replace("Make a donation","Donations").replace("Volunteer","Volunteer events"):m[1]}</div>`).join("")}</div></div>
+<div class="card"><h3>Shelters and rescue teams</h3>${sl.length?sl.map(s=>`<div class="item"><div><b>${esc(s.name)}</b><div class="mute">${esc(s.address)}${s.phone?" · "+esc(s.phone):""}</div>${map(s.address)}</div></div>`).join(""):empty("No shelters registered yet.")}</div>`}
+function V_report(){const rs=D.reports;
+ const list=rs.length?rs.map(r=>`<div class="item">${img(r.photo)}<div><div class="top"><b>${esc(r.species)}</b>${stat(r)}</div><div class="mute">${esc(r.ts)}${sh(me)?" · by "+esc(r.uname)+" ("+esc(r.uemail)+")":""}</div><div>${esc(r.address)} · ${map(r.address)}</div><div>${esc(r.description)}</div>${nt(r)}${sh(me)?upd("reports",r):""}</div></div>`).join(""):empty("No reports yet.");
+ return `<div class="card"><h2>${sh(me)?"Stray reports":"Report a stray animal"}</h2>${sh(me)?"":frm("reports",`<div class="row"><div><label>Animal</label><select name="species"><option>Dog</option><option>Cat</option><option>Other</option></select></div><div><label>Photo</label><input type="file" name="photo" accept="image/*"></div></div><label>Location (address or landmark)</label><input name="address" placeholder="Street, area, city" required><label>What did you see?</label><textarea name="description" rows="2"></textarea>`,"Send report")}</div><div class="card"><h3>${sh(me)?"All reports":"My reports and their status"}</h3>${sh(me)&&msg?`<div class="msg ok">${esc(msg)}</div>`:""}${list}</div>`}
+function V_pets(k){const an=D.animals.filter(a=>a.kind==k),title=k=="adopt"?"Adopt a stray animal":"Foster a stray animal",verb=k=="adopt"?"adoption":"foster";
+ const brd=`<option>Mongrel</option><option>Mixed Breed</option><option>Other</option>`;
+ const mine=D.requests.filter(r=>byId(D.animals,r.animal_id).kind==k);
+ const cards=an.length?an.map(a=>`<div class="item">${img(a.photo)}<div><div class="top"><b>${esc(a.name)}</b>${stat(a)}</div><div class="mute">${esc(a.species)} · ${esc(a.breed)} · ${esc(a.sex)}${a.birth?" · born about "+esc(a.birth):""} · ${esc(a.uname)}</div><div>${esc(a.description)}</div>
+  ${sh(me)?upd("animals",a):a.status=="Available"?`<form onsubmit="add(event,'requests')"><input type="hidden" name="animal_id" value="${a.id}"><div class="upd"><input name="message" placeholder="Why would you like to ${k}?"><button>Apply</button></div><div class="msg err"></div></form>`:""}</div></div>`).join(""):empty("No animals listed yet.");
+ const add_=sh(me)?`<div class="card"><h3>Add an animal profile</h3>${frm("animals",`<input type="hidden" name="kind" value="${k}"><div class="row"><div><label>Name</label><input name="name" required></div><div><label>Animal</label><select name="species"><option>Dog</option><option>Cat</option><option>Other</option></select></div></div><div class="row"><div><label>Breed</label><select name="breed">${brd}</select></div><div><label>Sex</label><select name="sex"><option>Male</option><option>Female</option></select></div><div><label>Estimated birthdate</label><input name="birth" type="date"></div></div><label>Description</label><textarea name="description" rows="2"></textarea><label>Photo</label><input type="file" name="photo" accept="image/*">`,"Add animal")}</div>`:"";
+ const reqs=sh(me)?mine.map(r=>{const a=byId(D.animals,r.animal_id);return `<div class="item"><div><div class="top"><b>${esc(a.name)}</b>${stat(r)}</div><div class="mute">${esc(r.uname)} (${esc(r.uemail)}) · ${esc(r.ts)}</div><div>${esc(r.message)}</div>${upd("requests",r)}</div></div>`}).join(""):mine.map(r=>`<div class="item"><div><div class="top"><b>${esc(byId(D.animals,r.animal_id).name)}</b>${stat(r)}</div><div class="mute">${esc(r.ts)}</div>${nt(r)}</div></div>`).join("");
+ return `${add_}<div class="card"><h2>${sh(me)?(k=="adopt"?"Adoptable animals":"Animals needing a foster home"):title}</h2>${msg?`<div class="msg ok">${esc(msg)}</div>`:""}${cards}</div><div class="card"><h3>${sh(me)?"Applications to review":"My "+verb+" applications"}</h3>${reqs||empty("None yet.")}</div>`}
+function V_donate(){const ds=D.donations;
+ return `<div class="card"><h2>${sh(me)?"Donations":"Make a donation"}</h2>${sh(me)?"":frm("donations",`<div class="row"><div><label>Amount</label><input name="amount" type="number" min="1" step="any" required></div><div><label>Payment method</label><select name="method"><option>Bank transfer</option><option>Online banking</option><option>Cash deposit</option><option>Other</option></select></div></div><label>Reference or receipt number</label><input name="reference">`,"Submit donation")}</div>
+ <div class="card"><h3>${sh(me)?"Donations received":"My donations"}</h3>${msg&&sh(me)?`<div class="msg ok">${esc(msg)}</div>`:""}${ds.length?ds.map(d=>`<div class="item"><div><div class="top"><b>${esc(d.amount)}</b>${stat(d)}</div><div class="mute">${esc(d.ts)} · ${esc(d.method)}${d.reference?" · ref "+esc(d.reference):""}${sh(me)?" · "+esc(d.uname)+" ("+esc(d.uemail)+")":""}</div>${nt(d)}${sh(me)?upd("donations",d):""}</div></div>`).join(""):empty("No donations yet.")}</div>`}
+function V_volunteer(){const ev=D.events,rg=D.regs;
+ const ad=sh(me)?`<div class="card"><h3>Organise an event</h3>${frm("events",`<label>Title</label><input name="title" required><div class="row"><div><label>Date</label><input name="date" type="date" required></div><div><label>Location</label><input name="address" placeholder="Street, area, city" required></div></div><label>Details</label><textarea name="description" rows="2"></textarea>`,"Create event")}</div>`:"";
+ const el=ev.length?ev.map(e=>`<div class="item"><div><div class="top"><b>${esc(e.title)}</b>${stat(e)}</div><div class="mute">${esc(e.date)} · ${esc(e.address)} · ${map(e.address)}</div><div>${esc(e.description)}</div>
+  ${sh(me)?upd("events",e):e.status=="Open"?`<form onsubmit="add(event,'regs')"><input type="hidden" name="event_id" value="${e.id}"><div class="upd"><input name="message" placeholder="Anything the shelter should know? (optional)"><button>Register</button></div><div class="msg err"></div></form>`:""}</div></div>`).join(""):empty("No events yet.");
+ const rl=rg.length?rg.map(r=>{const e=byId(ev,r.event_id);return `<div class="item"><div><div class="top"><b>${esc(e.title)}</b>${stat(r)}</div><div class="mute">${sh(me)?esc(r.uname)+" ("+esc(r.uemail)+") · ":""}${esc(r.ts)}</div><div>${esc(r.message)}</div>${nt(r)}${sh(me)?upd("regs",r):""}</div></div>`}).join(""):empty("None yet.");
+ return `${ad}<div class="card"><h2>${sh(me)?"Volunteer events":"Volunteer events"}</h2>${msg?`<div class="msg ok">${esc(msg)}</div>`:""}${el}</div><div class="card"><h3>${sh(me)?"Volunteer registrations":"My registrations"}</h3>${rl}</div>`}
+function draw(){let h;if(!me)h=view=="login"?V_auth():V_home();else{const back=view!="home"?`<button class="g" style="margin:0 0 12px" onclick="go('home')">Back to dashboard</button>`:"";
+ h=back+({home:V_dash,report:V_report,adopt:()=>V_pets("adopt"),foster:()=>V_pets("foster"),donate:V_donate,volunteer:V_volunteer}[view]||V_dash)()}$("#app").innerHTML=h}
+boot();
+</script></body></html>
