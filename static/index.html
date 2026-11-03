@@ -1,32 +1,61 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SRMS</title>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>SRMS</title>
 <style>
 :root{--bg:#f3f5f2;--card:#fff;--ink:#17231e;--mute:#5f6d66;--line:#dbe2dd;--teal:#0d7a64;--red:#b42318}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
 header{background:var(--ink);color:#fff;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-header b{font-size:19px;cursor:pointer}header span{color:#b9c8c1;font-size:13px;margin-right:10px}
-main{max-width:1050px;margin:auto;padding:20px 24px}.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px}
-h2{font-size:19px;margin:0 0 10px}h3{font-size:15px;margin:0 0 8px}.mute{color:var(--mute);font-size:13px}
-label{display:block;font-size:13px;color:var(--mute);margin:10px 0 3px}input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
+header b{font-size:19px;cursor:pointer}
+header span{color:#b9c8c1;font-size:13px;margin-right:10px}
+main{max-width:1050px;margin:auto;padding:20px 24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px}
+h2{font-size:19px;margin:0 0 10px}
+h3{font-size:15px;margin:0 0 8px}
+.mute{color:var(--mute);font-size:13px}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 3px}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
 input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
 button{background:var(--teal);color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer;margin:10px 6px 0 0}
-button.g{background:#fff;color:var(--teal);border:1px solid var(--teal)}header button{margin:0;padding:5px 12px}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}.tile{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 10px;text-align:center;cursor:pointer;font-size:15px;margin:0;color:var(--ink)}
-.tile:hover{border-color:var(--teal)}.tile i{display:block;font-style:normal;font-size:28px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.row{display:flex;gap:8px}.row>*{flex:1}@media(max-width:760px){.two{grid-template-columns:1fr}main{padding:14px}}
-.item{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;gap:12px}.item img{width:84px;height:84px;object-fit:cover;border-radius:6px;flex:none}.item>div{flex:1;min-width:0}
-.badge{font-size:12px;padding:2px 9px;border-radius:99px;background:#e4efe9;color:var(--teal);white-space:nowrap}.top{display:flex;justify-content:space-between;gap:8px}
-.upd{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.upd select{width:auto}.upd input{flex:1;min-width:120px}.upd button{margin:0;padding:6px 12px}
-.msg{font-size:13px;margin-top:8px;min-height:18px}.err{color:var(--red)}.ok{color:var(--teal)}.note{font-size:13px;margin-top:4px;background:#f3f7f5;padding:4px 8px;border-radius:4px}
-.demo{background:#fff8e6;border:1px solid #ecd9a0;border-radius:6px;padding:8px 10px;font-size:13px;margin-top:10px}a{color:var(--teal)}
-</style></head><body>
-<header><b onclick="go('home')">SRMS · Stray Rescue Management System</b><div id="who"></div></header>
+button.g{background:#fff;color:var(--teal);border:1px solid var(--teal)}
+header button{margin:0;padding:5px 12px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 10px;text-align:center;cursor:pointer;font-size:15px;margin:0;color:var(--ink)}
+.tile:hover{border-color:var(--teal)}
+.tile i{display:block;font-style:normal;font-size:28px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+@media(max-width:760px){.two{grid-template-columns:1fr}main{padding:14px}}
+.item{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;gap:12px}
+.item img{width:84px;height:84px;object-fit:cover;border-radius:6px;flex:none}
+.item>div{flex:1;min-width:0}
+.badge{font-size:12px;padding:2px 9px;border-radius:99px;background:#e4efe9;color:var(--teal);white-space:nowrap}
+.top{display:flex;justify-content:space-between;gap:8px}
+.upd{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.upd select{width:auto}.upd input{flex:1;min-width:120px}
+.upd button{margin:0;padding:6px 12px}
+.msg{font-size:13px;margin-top:8px;min-height:18px}
+.err{color:var(--red)}.ok{color:var(--teal)}
+.note{font-size:13px;margin-top:4px;background:#f3f7f5;padding:4px 8px;border-radius:4px}
+.demo{background:#fff8e6;border:1px solid #ecd9a0;border-radius:6px;padding:8px 10px;font-size:13px;margin-top:10px}
+a{color:var(--teal)}
+</style>
+</head>
+<body>
+<header>
+    <b onclick="go('home')">SRMS · Stray Rescue Management System</b>
+    <div id="who"></div>
+</header>
 <main id="app"></main>
 <script>
 const $=s=>document.querySelector(s),esc=t=>String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let me=null,D=null,view="home",pre="",tab="login",email="",demo="",msg="";
 async function api(m,u,b){const r=await fetch(u,{method:m,headers:{"Content-Type":"application/json"},body:b?JSON.stringify(b):undefined});const j=await r.json();if(!r.ok){const e=new Error(j.error);e.data=j;throw e}return j}
-const MODS={report:["🐾","Report a stray animal"],adopt:["🏠","Adopt a stray animal"],foster:["🤝","Foster a stray animal"],donate:["💝","Make a donation"],volunteer:["🙋","Volunteer"]};
+const MODS={report:["🐾","Report"],adopt:["🏠","Adopt"],foster:["🤝","Foster"],donate:["💝","Donate"],volunteer:["🙋","Volunteer"]};
 async function boot(){me=(await api("GET","/api/me")).me;if(me)D=await api("GET","/api/data");$("#who").innerHTML=me?`<span>${esc(me.name)} (${me.role=="shelter"?"shelter":"registered user"})</span><button class="g" onclick="out()">Log out</button>`:"";draw()}
 async function out(){await api("POST","/api/logout");view="home";boot()}
 function go(v){view=v;msg="";draw()}
